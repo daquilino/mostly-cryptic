@@ -5,7 +5,7 @@ const Player = require("./game-classes/player");
 
 //Global Variables
 var allPlayersMap = new Map(); //Stores all players.  Used to look up player game/room by socket.id.
-const GameSize = 4;        
+const GameSize = 2;        
 var gamesMap = new Map();
 var playersQueue = [];       
 
@@ -46,10 +46,7 @@ module.exports = function(server){
             newPlayer.userName = userName;
             newPlayer.room = "Main";
                 
-            allPlayersMap.set(socket.id, newPlayer);
-            
-console.log("a player joined: " + newPlayer.userName, socket.id);//TEST CODE
-               
+            allPlayersMap.set(socket.id, newPlayer);   
         }
 
         //--------------------------------------
@@ -72,12 +69,14 @@ console.log("a player joined: " + newPlayer.userName, socket.id);//TEST CODE
                 //if enough players for game, instantiates a new game and poplulates with players.
                 if(playersQueue.length >= GameSize)
                 {
+                    // Generates a unique random game name.
+                    do {
+                        var gameName = "game" + (Math.ceil(Math.random()*1000000)).toString();
+                    }
+                    while(gamesMap.has(gameName) === true);
 
-console.log("\nGame Created");//TEST CODE 
-
-                    // creates name for new game based on number of games (e.g. game1, game2,...)
-                    var gameName = "game" + (gamesMap.size + 1);
 console.log("gameName:", gameName);//TEST CODE                
+                    
                     // instantiates new game and assigns room
                     var newGame = new Game(IO)
                     newGame.room = gameName;
@@ -181,9 +180,6 @@ console.log("gameName:", gameName);//TEST CODE
                 // start game if not started
                 if(game.gameStarted === false)
                 {
-
-console.log("\n", game.room, "STARTED\n");//TEST CODE
-
                     game.gameStarted = true;
                     game.ShuffleCardDeck();
                     game.DealCards();                    
@@ -215,7 +211,6 @@ console.log("\n", game.room, "STARTED\n");//TEST CODE
 
             if(game)
             {    
-
                 game.connectedPlayerCount--;
 
                 if(game.connectedPlayerCount === 0)
